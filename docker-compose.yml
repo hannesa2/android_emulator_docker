@@ -1,6 +1,17 @@
 version: "3.6"
 services:
   android_emulator:
-    build: .
+    build:
+       context: .
+       args:
+         APROXY_PROTOCOL : httpA
+         APROXY_SERVER : localhostA
+         APROXY_PORT : 8080A
     ports:
       - "5554:5554"
+    environment:
+      - EPROXY_PORT=9999E
+      - EPROXY_PROTOCOL=httpE
+      - EPROXY_SERVER=localhostE
+      # - DEMO_VAR=${DEMO_VAR}
+
