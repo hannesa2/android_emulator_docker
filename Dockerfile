@@ -5,7 +5,6 @@
 FROM phusion/baseimage:0.10.0
 
 ## ARG's for build time with default values
-# TODO remove this comment. Set APROXY_PORT with an error. It's the fastest way to see if it's work
 ARG APROXY_PROTOCOL=http
 ARG APROXY_SERVER
 ARG APROXY_PORT=80
@@ -43,6 +42,11 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 # Install another dependencies
 RUN apt-get install git wget unzip net-tools socat gcc-multilib libglu1 -y
 
+ENV http_proxy http://$APROXY_SERVER:$APROXY_PORT
+ENV https_proxy http://$APROXY_SERVER:$APROXY_PORT
+
+RUN echo http_proxy=$http_proxy
+
 #Install Android
 ENV ANDROID_HOME /opt/android
 RUN wget -O android-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip --show-progress \
@@ -50,23 +54,23 @@ RUN wget -O android-tools.zip https://dl.google.com/android/repository/sdk-tools
 ENV PATH $PATH:$ANDROID_HOME/tools/bin
 
 #Install Android Tools
-RUN yes | sdkmanager --update --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "platform-tools" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "platforms;android-27" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "build-tools;27.0.3" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "system-images;android-27;google_apis;x86" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "system-images;android-25;google_apis;armeabi-v7a" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "extras;android;m2repository" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
-RUN yes | sdkmanager "extras;google;m2repository" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy_protocol=$APROXY_PROTOCOL
+RUN yes | sdkmanager --update --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "platform-tools" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "platforms;android-27" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "build-tools;27.0.3" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "system-images;android-27;google_apis;x86" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+#RUN yes | sdkmanager "system-images;android-25;google_apis;armeabi-v7a" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "extras;android;m2repository" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
+RUN yes | sdkmanager "extras;google;m2repository" --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
 
 # Add platform-tools and emulator to path
 ENV PATH $PATH:$ANDROID_HOME/platform-tools
 ENV PATH $PATH:$ANDROID_HOME/emulator
 
-#Install latest android emulator   system images
+#Install latest android emulator system images
 ENV EMULATOR_IMAGE "system-images;android-25;google_apis;armeabi-v7a"
 ENV ARCH "armeabi-v7a"
-RUN yes | sdkmanager $EMULATOR_IMAGE --verbose
+RUN yes | sdkmanager $EMULATOR_IMAGE --verbose --proxy_host=$APROXY_SERVER --proxy_port=$APROXY_PORT --proxy=$APROXY_PROTOCOL
 
 # Add startup script
 ADD startup.sh /startup.sh
